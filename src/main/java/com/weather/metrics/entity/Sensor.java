@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "SENSOR_DATA")
+@Table(name = "SENSOR")
 @Data
 @Builder
 @AllArgsConstructor

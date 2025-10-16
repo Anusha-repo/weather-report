@@ -4,15 +4,13 @@ package com.weather.metrics.controller;
 
 import com.weather.metrics.dto.MetricsQuery;
 import com.weather.metrics.dto.MetricsRequest;
+import com.weather.metrics.dto.MetricsResponse;
 import com.weather.metrics.entity.Sensor;
 import com.weather.metrics.service.WeatherSensorMetricsService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -56,18 +54,18 @@ public class WeatherMetricsController {
         return ResponseEntity.ok(savedData);
     }
 
-//    @PostMapping("/query")
-//    public ResponseEntity<SensorQueryResponse> querySensorData(@Valid @RequestBody SensorQueryRequest request) {
-//        SensorQueryResponse response = sensorDataService.querySensorData(request);
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    @GetMapping
-//    public ResponseEntity<List<SensorData>> getAllSensorData() {
-//        List<SensorData> sensorData = sensorDataService.getAllSensorData();
-//        return ResponseEntity.ok(sensorData);
-//    }
-//
+    @PostMapping("/query")
+    public ResponseEntity<MetricsResponse> querySensorData(@Valid @RequestBody MetricsQuery request) {
+        MetricsResponse response = weatherMetricsService.querySensorData(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/allSensorData")
+    public ResponseEntity<List<Sensor>> getAllSensorData() {
+        List<Sensor> sensorData = weatherMetricsService.getAllSensorData();
+        return ResponseEntity.ok(sensorData);
+    }
+
 //    @ExceptionHandler(IllegalArgumentException.class)
 //    public ResponseEntity<SensorQueryResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
 //        SensorQueryResponse response = new SensorQueryResponse();
