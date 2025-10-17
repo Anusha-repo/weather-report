@@ -1,10 +1,13 @@
 package com.weather.metrics.dto;
 
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
-import org.antlr.v4.runtime.misc.NotNull;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -12,17 +15,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MetricsRequest {
 
-    @NonNull
+    @NotBlank(message = "Sensor ID cannot be null")
     private String sensorId;
 
-    @NonNull
+    @NotBlank(message = "MetricName cannot be null")
     private String metricName;
 
-    @NonNull
+    @NotNull(message = "Metric value must not be null")
+    @Positive(message = "Metric value must be positive")
     private Double metricValue;
 
-
-    private LocalDateTime timestamp;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate timestamp;
 
 
 }

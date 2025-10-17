@@ -2,41 +2,54 @@ package com.weather.metrics.service;
 
 
 import com.weather.metrics.dto.MetricsQuery;
-import com.weather.metrics.dto.MetricsRequest;
 import com.weather.metrics.dto.MetricsResponse;
 import com.weather.metrics.entity.Sensor;
+import com.weather.metrics.exception.CustomExceptionResponse;
 import com.weather.metrics.repository.SensorRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import com.weather.metrics.constants.AppConstants.Statistics;
 @Service
 public class WeatherSensorMetricsService {
 
     @Autowired
     private SensorRepo sensorDataRepository;
 
-    public Sensor saveSensorData(Sensor sensorData) {
+    @Autowired
+    ValidationService validationService;
 
+    public Sensor saveSensorData(Sensor sensorData) {
             if (sensorData.getTimestamp() == null) {
-                sensorData.setTimestamp(LocalDateTime.now());
+                sensorData.setTimestamp(LocalDate.now());
             }
-            return sensorDataRepository.save(sensorData);
+
+            Sensor results= sensorDataRepository.save(sensorData);
+            if(results==null){
+                throw new CustomExceptionResponse(HttpStatus.BAD_REQUEST, "Unable to save data");
+            }
+            return results;
         }
 
 
     public MetricsResponse querySensorData(MetricsQuery request) {
         // Validate date range
-        validateDateRange(request);
+        validationService.validateDateRange(request);
 
         // Set default date range if not provided (last 24 hours)
-        LocalDateTime endDate = request.getEndDate() != null ? request.getEndDate() : LocalDateTime.now();
-        LocalDateTime startDate = request.getStartDate() != null ? request.getStartDate() : endDate.minusDays(1);
+        LocalDate endDate = request.getEndDate() != null ? request.getEndDate() : LocalDate.now();
+        LocalDate startDate = request.getStartDate() != null ? request.getStartDate() : endDate.minusDays(1);
 
         // Fetch data based on query parameters
         List<Sensor> sensorDataList = fetchSensorData(request, startDate, endDate);
+        if(sensorDataList.isEmpty()){
+            throw new CustomExceptionResponse(HttpStatus.BAD_REQUEST, "No sensor data found for the given query parameters");
+
+        }
 
         // Calculate statistics
         Map<String, Map<String, Double>> results = calculateStatistics(sensorDataList, request);
@@ -48,21 +61,7 @@ public class WeatherSensorMetricsService {
         return response;
     }
 
-    private void validateDateRange(MetricsQuery request) {
-        if (request.getStartDate() != null && request.getEndDate() != null) {
-            if (request.getStartDate().isAfter(request.getEndDate())) {
-                throw new IllegalArgumentException("Start date cannot be after end date");
-            }
-
-            // Check if date range is between 1 day and 1 month
-            long daysBetween = java.time.Duration.between(request.getStartDate(), request.getEndDate()).toDays();
-            if (daysBetween < 1 || daysBetween > 31) {
-                throw new IllegalArgumentException("Date range must be between 1 day and 1 month");
-            }
-        }
-    }
-
-    private List<Sensor> fetchSensorData(MetricsQuery request, LocalDateTime startDate, LocalDateTime endDate) {
+    private List<Sensor> fetchSensorData(MetricsQuery request, LocalDate startDate, LocalDate endDate) {
         List<String> sensorIds = request.getSensorIds();
         List<String> metrics = request.getMetricNames();
 
@@ -111,16 +110,26 @@ public class WeatherSensorMetricsService {
     }
 
     private double calculateStatistic(List<Double> values, String statistic) {
-        return switch (statistic) {
-            case "min" -> values.stream().min(Double::compare).orElse(0.0);
-            case "max" -> values.stream().max(Double::compare).orElse(0.0);
-            case "sum" -> values.stream().mapToDouble(Double::doubleValue).sum();
-            case "average" -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-            default -> throw new IllegalArgumentException("Invalid statistic");
-        };
+        try {
+            return switch (statistic) {
+                case Statistics.MIN -> values.stream().min(Double::compare).orElse(0.0);
+                case Statistics.MAX -> values.stream().max(Double::compare).orElse(0.0);
+                case Statistics.SUM -> values.stream().mapToDouble(Double::doubleValue).sum();
+                case Statistics.AVG -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                default -> throw new IllegalArgumentException("Invalid statistic");
+            };
+        }catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Error calculating statistic: " + e.getMessage(), e);
+        }
     }
 
+
     public List<Sensor> getAllSensorData() {
-        return sensorDataRepository.findAll();
+        try{
+            return sensorDataRepository.findAll();
+        }catch (DataAccessException e) {
+            throw new RuntimeException("Failed to fetch all sensor data: from SENSOR table", e);
+        }
     }
+
 }

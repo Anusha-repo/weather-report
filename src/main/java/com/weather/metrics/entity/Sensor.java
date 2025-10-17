@@ -3,8 +3,7 @@ package com.weather.metrics.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "SENSOR")
@@ -30,12 +29,12 @@ public class Sensor {
 
     @NonNull
     @Column(name="timestamp")
-    private LocalDateTime timestamp;
+    private LocalDate timestamp;
 
     // Constructors
     public Sensor() {}
 
-    public Sensor(String sensorId, String metricName, Double metricValue, LocalDateTime timestamp) {
+    public Sensor(String sensorId, String metricName, Double metricValue, LocalDate timestamp) {
         this.sensorId = sensorId;
         this.metricName = metricName;
         this.metricValue = metricValue;
