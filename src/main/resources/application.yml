@@ -1,0 +1,28 @@
+# Server Configuration
+server:
+  port: 8080
+
+# Database Configuration
+spring:
+  datasource:
+    url: jdbc:h2:mem:sensor
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /actuator

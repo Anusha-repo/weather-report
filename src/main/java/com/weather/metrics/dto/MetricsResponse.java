@@ -13,6 +13,6 @@ import java.util.Map;
 @NoArgsConstructor
 public class MetricsResponse {
     private Map<String, Map<String, Double>> results; // sensorId -> (metric -> value)
-    private String message;
+
 
 }

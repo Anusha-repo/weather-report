@@ -6,6 +6,7 @@ import com.weather.metrics.dto.MetricsResponse;
 import com.weather.metrics.entity.Sensor;
 import com.weather.metrics.exception.CustomExceptionResponse;
 import com.weather.metrics.repository.SensorRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import com.weather.metrics.constants.AppConstants.Statistics;
+@Slf4j
 @Service
 public class WeatherSensorMetricsService {
 
@@ -53,14 +55,12 @@ public class WeatherSensorMetricsService {
                 throw new CustomExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, "No sensor data found for the given query parameters");
 
             }
-
+            log.info("Fetch from sensor repo was successful");
             // Calculate statistics
             Map<String, Map<String, Double>> results = calculateStatistics(sensorDataList, request);
 
             MetricsResponse response = new MetricsResponse();
             response.setResults(results);
-            response.setMessage("Query executed successfully");
-
             return response;
         } catch (DataAccessException e) {
         throw new CustomExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while querying sensor data. " + e.getMessage());
