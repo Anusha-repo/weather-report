@@ -24,41 +24,48 @@ public class WeatherSensorMetricsService {
     ValidationService validationService;
 
     public Sensor saveSensorData(Sensor sensorData) {
-            if (sensorData.getTimestamp() == null) {
-                sensorData.setTimestamp(LocalDate.now());
+            try{
+                if (sensorData.getTimestamp() == null) {
+                    sensorData.setTimestamp(LocalDate.now());
+                }
+                return sensorDataRepository.save(sensorData);
+
+            }catch (Exception e) {
+                throw new CustomExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to save sensor data"+e.getMessage());
             }
 
-            Sensor results= sensorDataRepository.save(sensorData);
-            if(results==null){
-                throw new CustomExceptionResponse(HttpStatus.BAD_REQUEST, "Unable to save data");
-            }
-            return results;
+
         }
 
 
     public MetricsResponse querySensorData(MetricsQuery request) {
-        // Validate date range
-        validationService.validateDateRange(request);
+        try {
+            // Validate date range
+            validationService.validateDateRange(request);
 
-        // Set default date range if not provided (last 24 hours)
-        LocalDate endDate = request.getEndDate() != null ? request.getEndDate() : LocalDate.now();
-        LocalDate startDate = request.getStartDate() != null ? request.getStartDate() : endDate.minusDays(1);
+            // Set default date range if not provided (last 24 hours)
+            LocalDate endDate = request.getEndDate() != null ? request.getEndDate() : LocalDate.now();
+            LocalDate startDate = request.getStartDate() != null ? request.getStartDate() : endDate.minusDays(1);
 
-        // Fetch data based on query parameters
-        List<Sensor> sensorDataList = fetchSensorData(request, startDate, endDate);
-        if(sensorDataList.isEmpty()){
-            throw new CustomExceptionResponse(HttpStatus.BAD_REQUEST, "No sensor data found for the given query parameters");
+            // Fetch data based on query parameters
+            List<Sensor> sensorDataList = fetchSensorData(request, startDate, endDate);
+            if (sensorDataList.isEmpty()) {
+                throw new CustomExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, "No sensor data found for the given query parameters");
 
-        }
+            }
 
-        // Calculate statistics
-        Map<String, Map<String, Double>> results = calculateStatistics(sensorDataList, request);
+            // Calculate statistics
+            Map<String, Map<String, Double>> results = calculateStatistics(sensorDataList, request);
 
-        MetricsResponse response = new MetricsResponse();
-        response.setResults(results);
-        response.setMessage("Query executed successfully");
+            MetricsResponse response = new MetricsResponse();
+            response.setResults(results);
+            response.setMessage("Query executed successfully");
 
-        return response;
+            return response;
+        } catch (DataAccessException e) {
+        throw new CustomExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Database error while querying sensor data. " + e.getMessage());
+    }
+
     }
 
     private List<Sensor> fetchSensorData(MetricsQuery request, LocalDate startDate, LocalDate endDate) {
@@ -128,7 +135,7 @@ public class WeatherSensorMetricsService {
         try{
             return sensorDataRepository.findAll();
         }catch (DataAccessException e) {
-            throw new RuntimeException("Failed to fetch all sensor data: from SENSOR table", e);
+            throw new CustomExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch all sensor data: from SENSOR table. " + e.getMessage());
         }
     }
 

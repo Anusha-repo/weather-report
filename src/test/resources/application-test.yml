@@ -1,0 +1,80 @@
+#Server port
+server:
+  port: 8081
+
+app:
+  feature:
+    new: true
+
+# Data base properties
+spring:
+  jpa:
+    show-sql: true
+    properties.hibernate.dialect: org.hibernate.dialect.H2Dialect
+    hibernate.naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  datasource:
+    anthemproduct:
+      url: jdbc:h2:mem:product;
+      username: product
+      password: product
+      driverClassName: org.h2.Driver
+    nonanthemproduct:
+      url: jdbc:h2:mem:product;
+      username: product
+      password: product
+      driverClassName: org.h2.Driver
+    anthemuser:
+      url: jdbc:h2:mem:user;MODE=MySQL;
+      username: user
+      password: user
+      driver-class-name: org.h2.Driver
+    nonanthemuser:
+      url: jdbc:h2:mem:user;MODE=MySQL;
+      username: user
+      password: user
+      driver-class-name: org.h2.Driver
+  protegrity:
+    db: test
+    schema: test
+  sql:
+    init:
+      platform: snowflake
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  mvc:
+    pathmatch:
+      matching-strategy: path-pattern-parser
+
+  #Swagger Doc Properties
+springdoc:
+  api-docs:
+    path: /api-docs
+
+api:
+  tested: false
+
+jwt:
+  path: "test"
+
+services:
+  base-path:
+    authorizationDomain: mock://localhost:8081
+
+dbg:
+  service:
+    corsAllowedOrigins: mock://localhost:8081
+
+external:
+    reports: PHL,FHL
+
+parameters:
+  tokenize: billgProvTaxId
+  fieldDetokenize: billgProvTaxId
+  sqlDetokenize: BILLG_PROV_TAX_ID
+
+#Allowed cross origins
+corsUrls: mock://localhost:8081
+
+ldap:
+  secretPath: "{\"ldapUrl\":\"LDAP://test:389\",\"ldapDomain\":\"test\",\"ldapSearchBase\":\"OU=test\",\"ldapSearchFilter\":\"(&(objectClass=user)(objectCategory=person)(test))\",\"ldapManagerDN\":\"test\",\"ldapManagerPWD\":\"test\"}"
