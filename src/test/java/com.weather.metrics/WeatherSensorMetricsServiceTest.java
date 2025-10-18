@@ -1,18 +1,23 @@
 package com.weather.metrics;
 
 import com.weather.metrics.dto.MetricsQuery;
-import com.weather.metrics.dto.MetricsRequest;
+import com.weather.metrics.dto.MetricsResponse;
+import com.weather.metrics.dto.QueryResults;
 import com.weather.metrics.entity.Sensor;
 import com.weather.metrics.exception.CustomExceptionResponse;
 import com.weather.metrics.repository.SensorRepo;
+import com.weather.metrics.service.ValidationService;
 import com.weather.metrics.service.WeatherSensorMetricsService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -25,6 +30,14 @@ public class WeatherSensorMetricsServiceTest {
 
     @InjectMocks
     private WeatherSensorMetricsService sensorService;
+
+    @Mock
+    private ValidationService validationService;
+
+//    @BeforeEach
+//    void setUp() {
+//        MockitoAnnotations.openMocks(this); // Initialize mocks
+//    }
 
 
 
@@ -76,9 +89,55 @@ public class WeatherSensorMetricsServiceTest {
         });
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, exception.getStatus());
-        assertTrue(exception.getMessage().contains("Unable to save sensor data"));
+        assertTrue(exception.getMessage().contains("An error occurred while saving sensor data:"));
         verify(sensorRepository, times(1)).save(mockSensorData);
     }
+
+    @Test
+    void testQuerySensorData_Success() {
+        // Arrange
+        MetricsQuery request = new MetricsQuery();
+        request.setSensorIds(List.of("sensor-1"));
+        request.setMetricNames(List.of("temperature"));
+        request.setStatistic("AVG");
+
+        QueryResults mockResult = mock(QueryResults.class);
+        when(mockResult.getSensorId()).thenReturn("sensor-1");
+        when(mockResult.getMetricName()).thenReturn("temperature");
+        when(mockResult.getResult()).thenReturn(25.0);
+
+        when(sensorRepository.findAggMetrics(anyList(), anyList(), any(LocalDate.class), any(LocalDate.class), anyString()))
+                .thenReturn(List.of(mockResult));
+
+        // Act
+        MetricsResponse response = sensorService.querySensorData(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(1, response.getResults().size());
+        assertEquals(25.0, response.getResults().get("sensor-1").get("temperature"));
+        verify(validationService, times(1)).validateDateRange(request);
+        verify(sensorRepository, times(1)).findAggMetrics(anyList(), anyList(), any(LocalDate.class), any(LocalDate.class), anyString());
+    }
+
+    @Test
+    void testQuerySensorData_NoDataFound() {
+        // Arrange
+        MetricsQuery request = new MetricsQuery();
+        request.setSensorIds(List.of("sensor-1"));
+        request.setMetricNames(List.of("temperature"));
+        request.setStatistic("AVG");
+
+        when(sensorRepository.findAggMetrics(anyList(), anyList(), any(LocalDate.class), any(LocalDate.class), anyString()))
+                .thenReturn(List.of());
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> sensorService.querySensorData(request));
+        assertEquals("An error occurred while querying sensor data: No sensor data found for the given for id's[sensor-1] and metrics [temperature]", exception.getMessage());
+        verify(validationService, times(1)).validateDateRange(request);
+        verify(sensorRepository, times(1)).findAggMetrics(anyList(), anyList(), any(LocalDate.class), any(LocalDate.class), anyString());
+    }
+
 
 
 }

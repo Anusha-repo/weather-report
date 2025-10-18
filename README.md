@@ -50,7 +50,7 @@ curl --location --request GET 'http://localhost:8080/api/v1/weather-metrics/allS
 2. @PreAuthorise annotations on controller methods to restrict access based on user roles.
 3. Swagger integration for API documentation and testing.
 4. Include more unit tests to increase the test coverage
-5. Expand the logging mechanism to include different log levels and external log management tools.
+5. Currently using slf4j simple logger, can be replaced with logback for better logging management. Also there is need to increase the logging for better visibility.
 
  
 

@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 public class ValidationService {
 
     public void validateDateRange(MetricsQuery request) {
-        if (request.getStartDate() == null || request.getEndDate() == null) {
+        if ((request.getStartDate() != null && request.getEndDate() == null) || (request.getStartDate() == null && request.getEndDate() != null)) {
                 throw new IllegalArgumentException("Both start date and end date must be provided or neither");
             }
         if (request.getStartDate() != null && request.getEndDate() != null) {

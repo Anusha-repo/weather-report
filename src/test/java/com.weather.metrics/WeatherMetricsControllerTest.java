@@ -1,7 +1,10 @@
 package com.weather.metrics;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weather.metrics.controller.WeatherMetricsController;
+import com.weather.metrics.dto.MetricsQuery;
 import com.weather.metrics.dto.MetricsRequest;
+import com.weather.metrics.dto.MetricsResponse;
 import com.weather.metrics.entity.Sensor;
 import com.weather.metrics.service.WeatherSensorMetricsService;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -115,7 +120,53 @@ public class WeatherMetricsControllerTest {
                         .content(invalidRequest))
                 .andExpect(status().isBadRequest());
 
+
         verify(weatherMetricsService, never()).saveSensorData(any(Sensor.class));
+    }
+
+
+    @Test
+    void testQuerySensorData() {
+        // Arrange
+        MetricsQuery request = new MetricsQuery();
+        request.setSensorIds(List.of("sensor-1", "sensor-2"));
+        request.setMetricNames(List.of("temperature", "humidity"));
+        request.setStatistic("MIN");
+
+        MetricsResponse mockResponse = new MetricsResponse();
+        mockResponse.setResults(Map.of(
+                "sensor-1", Map.of("temperature", 19.5, "humidity", 60.0),
+                "sensor-2", Map.of("temperature", 22.0, "humidity", 55.0)
+        ));
+
+        when(weatherMetricsService.querySensorData(any(MetricsQuery.class))).thenReturn(mockResponse);
+
+        // Act
+        ResponseEntity<MetricsResponse> response = weatherSensorMetricsController.querySensorData(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        verify(weatherMetricsService, times(1)).querySensorData(any(MetricsQuery.class));
+    }
+
+    @Test
+    void testGetAllSensorData() {
+        // Arrange
+        Sensor sensor1 = createMockSensor();
+        Sensor sensor2 = createMockSensor();
+
+        when(weatherMetricsService.getAllSensorData()).thenReturn(List.of(sensor1, sensor2));
+
+        // Act
+        ResponseEntity<List<Sensor>> response = weatherSensorMetricsController.getAllSensorData();
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        verify(weatherMetricsService, times(1)).getAllSensorData();
     }
 
 }
