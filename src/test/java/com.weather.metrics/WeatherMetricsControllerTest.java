@@ -1,6 +1,5 @@
 package com.weather.metrics;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weather.metrics.controller.WeatherMetricsController;
 import com.weather.metrics.dto.MetricsQuery;
 import com.weather.metrics.dto.MetricsRequest;
@@ -27,7 +26,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.http.MediaType;
 
 @SpringBootTest
 @AutoConfigureMockMvc

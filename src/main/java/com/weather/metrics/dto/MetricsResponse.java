@@ -12,7 +12,8 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MetricsResponse {
-    private Map<String, Map<String, Double>> results; // sensorId -> (metric -> value)
+    // sensorId -> (metric -> value)
+    private Map<String, Map<String, Double>> results;
 
 
 }

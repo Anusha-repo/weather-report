@@ -11,18 +11,6 @@ import java.util.List;
 
 @Repository
 public interface SensorRepo extends JpaRepository<Sensor,Long> {
-
-//    @Query("SELECT sd FROM Sensor sd WHERE " +
-//            "(:sensorIds IS NULL OR sd.sensorId IN :sensorIds) AND " +
-//            "(:metrics IS NULL OR sd.metricName IN :metrics) AND " +
-//            "sd.timestamp BETWEEN :start AND :end")
-//    List<Sensor> findMetrics(
-//            @Param("sensorIds") List<String> sensorIds,
-//            @Param("metrics") List<String> metrics,
-//            @Param("start") LocalDate start,
-//            @Param("end") LocalDate end);
-
-
     @Query(value = """
         SELECT sensor_id as sensorId, 
                metric_name as metricName,

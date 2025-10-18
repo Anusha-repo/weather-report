@@ -8,11 +8,9 @@ import com.weather.metrics.exception.CustomExceptionResponse;
 import com.weather.metrics.repository.SensorRepo;
 import com.weather.metrics.service.ValidationService;
 import com.weather.metrics.service.WeatherSensorMetricsService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 
@@ -34,10 +32,6 @@ public class WeatherSensorMetricsServiceTest {
     @Mock
     private ValidationService validationService;
 
-//    @BeforeEach
-//    void setUp() {
-//        MockitoAnnotations.openMocks(this); // Initialize mocks
-//    }
 
 
 

@@ -12,6 +12,7 @@ public class ValidationService {
         if ((request.getStartDate() != null && request.getEndDate() == null) || (request.getStartDate() == null && request.getEndDate() != null)) {
                 throw new IllegalArgumentException("Both start date and end date must be provided or neither");
             }
+
         if (request.getStartDate() != null && request.getEndDate() != null) {
             if (request.getStartDate().isAfter(request.getEndDate())) {
                 throw new IllegalArgumentException("Start date cannot be after end date");
